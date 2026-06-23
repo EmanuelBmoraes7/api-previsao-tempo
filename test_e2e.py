@@ -5,10 +5,12 @@ cliente = TestClient(main.app)
 
 
 # Teste E2E (ponta a ponta): testa o fluxo completo de verdade.
-# IMPORTANTE: precisa do banco rodando no Docker (docker compose up -d).
-# 1) Faz um POST que busca o tempo real e salva no banco.
-# 2) Faz um GET e confere se a previsao salva aparece na lista.
+# IMPORTANTE: precisa do banco rodando (Docker localmente, ou o Postgres do CI).
+# Antes de tudo, garante que a tabela existe chamando criar_tabela().
 def test_fluxo_completo():
+    # Garante que a tabela "previsoes" existe no banco
+    main.criar_tabela()
+
     # Passo 1: salva uma previsao
     resposta_post = cliente.post("/api/previsao")
     assert resposta_post.status_code == 200
