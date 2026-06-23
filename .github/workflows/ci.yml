@@ -1,0 +1,50 @@
+# Nome da esteira (aparece na aba "Actions" do GitHub)
+name: CI - Testes da API
+
+# Quando a esteira roda: a cada push ou pull request na branch main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  testes:
+    # A esteira roda numa maquina Linux fornecida pelo GitHub
+    runs-on: ubuntu-latest
+
+    # Sobe um banco Postgres dentro da esteira, igual fazemos com o Docker
+    services:
+      banco:
+        image: postgres:16
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin123
+          POSTGRES_DB: previsoes_db
+        ports:
+          - 5432:5432
+        # Espera o banco ficar pronto antes de rodar os testes
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      # 1. Baixa o codigo do repositorio
+      - name: Baixar o codigo
+        uses: actions/checkout@v4
+
+      # 2. Instala o Python 3.12
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 3. Instala as bibliotecas do projeto
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      # 4. Roda todos os testes
+      - name: Rodar os testes
+        run: python -m pytest -v
